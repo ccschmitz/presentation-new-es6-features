@@ -466,7 +466,59 @@ It should also be noted that the weak equivalents of Map and Set are also availa
 
         <section data-markdown>
 #### New Features
+## Promises
+        </section>
+
+        <section data-markdown>
+#### New Features
 ## Generators
+        </section>
+
+        <section data-markdown>
+```js
+function* ticketGenerator() {
+  yield 1;
+  yield 2;
+  yield 3;
+}
+
+var takeANumber = ticketGenerator();
+takeANumber.next(); // { value: 1, done: false }
+takeANumber.next(); // { value: 2, done: false }
+takeANumber.next(); // { value: 3, done: false }
+takeANumber.next(); // { value: undefined, done: true }
+```
+
+Note:
+Generators are functions that can suspend themselves (using the `yield` keyword) and be resumed (from the outside world) by calling their `next()` method. This is cool, but how is it useful?
+        </section>
+
+        <section data-markdown>
+```js
+function sync(gen) {
+  var iterable, resume;
+
+  resume = function(response) {
+    iterable.next(retVal); // gets returned and assigned
+  };
+
+  // kicks things off
+  iterable = gen(resume);
+  iterable.next();
+}
+
+sync(function* (resume) {
+  var x = firstAsync(resume);
+  var y = secondAsync(resume);
+  var z = thirdAsync(resume);
+  // do something with your data
+});
+```
+
+Note:
+In this example we have some fake asynchronous calls being run inside of a `sync` function that is being used to wait for all the data to be returned before trying to do anything with it. This is cool because using generators we are able to run our code from top to bottom without breaking execution.
+
+This is something we previously would have had to use nested callbacks for. With generators it is *much* cleaner.
         </section>
 
         <section data-markdown>
@@ -475,21 +527,58 @@ It should also be noted that the weak equivalents of Map and Set are also availa
         </section>
 
         <section data-markdown>
+```js
+function createDefensiveObject(target) {
+  return new Proxy(target, {
+    get: function(target, property) {
+      if (property in target) {
+        return target[property];
+      } else {
+        throw new ReferenceError("Property \"" + property + "\" does not exist.");
+      }
+    }
+  });
+}
+
+var defensivePerson = createDefensiveObject({ name: "Chris Schmitz" });
+
+console.log(defensivePerson.name); // "Chris Schmitz"
+console.log(defensivePerson.age);  // !!ERROR!!
+```
+
+Note:
+Proxies provide a meta programming API for JavaScript that allows you to define behavior of your objects. You can set "traps" for certain behavior, like reading or writing properties, and handle them however you want.
+
+In this example we're creating an object that will return an error whenever someone tries to retrieve a property from it that doesn't exist. This behavior would have saved millions of gray hairs for JavaScripters all over the world :)
+        </section>
+
+        <section data-markdown>
 #### New Features
 ## Template Strings
         </section>
 
         <section data-markdown>
+
+The old way:
+
 ```js
-var arr = [1, 2, 3, 4, 5],
-    sum = 0;
+var person = { name: 'Chris Schmitz' },
+    template = 'My name is ' + person.name + '.';
 
-for (var v of arr) {
-  sum += v;
-}
-
-console.log(sum); // 15
+console.log(template); // 'My name is Chris Schmitz';
 ```
+
+The new way:
+
+```js
+var person = { name: 'Chris Schmitz' },
+    template = `My name is ${person.name}.`;
+
+console.log(template); // 'My name is Chris Schmitz';
+```
+
+Note:
+Everyone has build up strings in JavaScript before like the first example. It's annoying and cumbersome. Luckily, we will be getting a much easier way to handle this in the future.
         </section>
 
         <section>
